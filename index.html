@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AquaAI — Water Quality Prediction System</title>
+  <meta name="description" content="AI-powered water quality prediction system using WHO/BIS standards. Analyze 12 parameters and get instant WQI scores, recommendations, and trend insights." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- CANVAS BACKGROUND -->
+  <canvas id="heroCanvas"></canvas>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <div class="nav-logo">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M16 2C16 2 6 12 6 19a10 10 0 0020 0C26 12 16 2 16 2Z" fill="url(#wg)" opacity="0.9"/>
+            <path d="M16 10C16 10 11 16 11 20a5 5 0 0010 0C21 16 16 10 16 10Z" fill="url(#wg2)"/>
+            <defs>
+              <linearGradient id="wg" x1="6" y1="2" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00d4ff"/><stop offset="1" stop-color="#0066ff"/>
+              </linearGradient>
+              <linearGradient id="wg2" x1="11" y1="10" x2="21" y2="25" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#ffffff" stop-opacity="0.9"/><stop offset="1" stop-color="#00d4ff" stop-opacity="0.4"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="nav-title">AquaAI</span>
+      </div>
+      <div class="nav-center">
+        <a href="#predict" class="nav-link">Predict</a>
+        <a href="#results" class="nav-link">Results</a>
+        <a href="#trends" class="nav-link">Trends</a>
+        <a href="#recommendations" class="nav-link">Recommendations</a>
+      </div>
+      <div class="nav-wqi-badge" id="navWqiBadge">
+        <span class="wqi-dot" id="navWqiDot"></span>
+        <span id="navWqiLabel">—</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <div class="hero-pill">
+        <span class="pill-dot"></span>
+        AI-Powered Analysis · WHO/BIS Standards
+      </div>
+      <h1 class="hero-title">
+        Predict <span class="gradient-text">Water Quality</span><br/>with Intelligence
+      </h1>
+      <p class="hero-subtitle">
+        Analyze 12 critical water parameters using our AI scoring engine — get instant
+        Water Quality Index scores, contamination breakdowns, and smart treatment recommendations.
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">12</span>
+          <span class="stat-label">Parameters</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">5</span>
+          <span class="stat-label">Quality Tiers</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">WHO</span>
+          <span class="stat-label">Standards</span>
+        </div>
+      </div>
+      <a href="#predict" class="hero-cta">
+        <span>Start Analysis</span>
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      </a>
+    </div>
+    <div class="hero-scroll-hint">
+      <div class="scroll-line"></div>
+      <span>Scroll to explore</span>
+    </div>
+  </section>
+
+  <!-- PRESET SCENARIOS -->
+  <section class="presets-section" id="predict">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Quick Load</div>
+        <h2 class="section-title">Sample Scenarios</h2>
+        <p class="section-desc">Load pre-configured water source data to explore predictions</p>
+      </div>
+      <div class="presets-grid">
+        <button class="preset-card" id="preset-ground" onclick="loadPreset('ground')">
+          <div class="preset-icon">🌍</div>
+          <div class="preset-info">
+            <span class="preset-name">Ground Water</span>
+            <span class="preset-sub">Borewell · Moderate minerals</span>
+          </div>
+          <div class="preset-badge good">Good</div>
+        </button>
+        <button class="preset-card" id="preset-river" onclick="loadPreset('river')">
+          <div class="preset-icon">🏞️</div>
+          <div class="preset-info">
+            <span class="preset-name">River Water</span>
+            <span class="preset-sub">Surface runoff · High turbidity</span>
+          </div>
+          <div class="preset-badge poor">Poor</div>
+        </button>
+        <button class="preset-card" id="preset-municipal" onclick="loadPreset('municipal')">
+          <div class="preset-icon">🏙️</div>
+          <div class="preset-info">
+            <span class="preset-name">Municipal Supply</span>
+            <span class="preset-sub">Treated · Chlorinated</span>
+          </div>
+          <div class="preset-badge excellent">Excellent</div>
+        </button>
+        <button class="preset-card" id="preset-industrial" onclick="loadPreset('industrial')">
+          <div class="preset-icon">🏭</div>
+          <div class="preset-info">
+            <span class="preset-name">Industrial Effluent</span>
+            <span class="preset-sub">Heavy metals · Contaminated</span>
+          </div>
+          <div class="preset-badge unfit">Unfit</div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARAMETER INPUT DASHBOARD -->
+  <section class="params-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Input Dashboard</div>
+        <h2 class="section-title">Water Parameters</h2>
+        <p class="section-desc">Adjust the sliders or enter values to configure your water sample</p>
+      </div>
+
+      <div class="params-grid">
+
+        <!-- pH -->
+        <div class="param-card" data-param="ph">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:195">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">pH Level</span>
+              <span class="param-unit">Unitless</span>
+            </div>
+            <div class="param-status-dot" id="dot-ph"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-ph" value="7.0" step="0.1" min="0" max="14" oninput="syncSlider('ph')"/>
+            <div class="param-safe-range">Safe: 6.5 – 8.5</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-ph" min="0" max="14" step="0.1" value="7.0" oninput="syncValue('ph')" />
+          <div class="slider-labels"><span>0</span><span>7</span><span>14</span></div>
+        </div>
+
+        <!-- Turbidity -->
+        <div class="param-card" data-param="turbidity">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:45">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Turbidity</span>
+              <span class="param-unit">NTU</span>
+            </div>
+            <div class="param-status-dot" id="dot-turbidity"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-turbidity" value="0.5" step="0.1" min="0" max="20" oninput="syncSlider('turbidity')"/>
+            <div class="param-safe-range">Safe: &lt; 1</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-turbidity" min="0" max="20" step="0.1" value="0.5" oninput="syncValue('turbidity')" />
+          <div class="slider-labels"><span>0</span><span>10</span><span>20</span></div>
+        </div>
+
+        <!-- TDS -->
+        <div class="param-card" data-param="tds">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:160">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">TDS</span>
+              <span class="param-unit">mg/L</span>
+            </div>
+            <div class="param-status-dot" id="dot-tds"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-tds" value="250" step="1" min="0" max="2000" oninput="syncSlider('tds')"/>
+            <div class="param-safe-range">Safe: &lt; 500</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-tds" min="0" max="2000" step="1" value="250" oninput="syncValue('tds')" />
+          <div class="slider-labels"><span>0</span><span>1000</span><span>2000</span></div>
+        </div>
+
+        <!-- Hardness -->
+        <div class="param-card" data-param="hardness">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:280">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 20 2 20"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Hardness</span>
+              <span class="param-unit">mg/L</span>
+            </div>
+            <div class="param-status-dot" id="dot-hardness"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-hardness" value="120" step="1" min="0" max="600" oninput="syncSlider('hardness')"/>
+            <div class="param-safe-range">Safe: &lt; 300</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-hardness" min="0" max="600" step="1" value="120" oninput="syncValue('hardness')" />
+          <div class="slider-labels"><span>0</span><span>300</span><span>600</span></div>
+        </div>
+
+        <!-- Dissolved Oxygen -->
+        <div class="param-card" data-param="do">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:210">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Dissolved Oxygen</span>
+              <span class="param-unit">mg/L</span>
+            </div>
+            <div class="param-status-dot" id="dot-do"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-do" value="8.0" step="0.1" min="0" max="14" oninput="syncSlider('do')"/>
+            <div class="param-safe-range">Safe: &gt; 6</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-do" min="0" max="14" step="0.1" value="8.0" oninput="syncValue('do')" />
+          <div class="slider-labels"><span>0</span><span>7</span><span>14</span></div>
+        </div>
+
+        <!-- Conductivity -->
+        <div class="param-card" data-param="conductivity">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:30">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Conductivity</span>
+              <span class="param-unit">µS/cm</span>
+            </div>
+            <div class="param-status-dot" id="dot-conductivity"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-conductivity" value="400" step="1" min="0" max="3000" oninput="syncSlider('conductivity')"/>
+            <div class="param-safe-range">Safe: &lt; 1500</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-conductivity" min="0" max="3000" step="1" value="400" oninput="syncValue('conductivity')" />
+          <div class="slider-labels"><span>0</span><span>1500</span><span>3000</span></div>
+        </div>
+
+        <!-- Nitrates -->
+        <div class="param-card" data-param="nitrates">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:100">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Nitrates</span>
+              <span class="param-unit">mg/L</span>
+            </div>
+            <div class="param-status-dot" id="dot-nitrates"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-nitrates" value="3.0" step="0.1" min="0" max="50" oninput="syncSlider('nitrates')"/>
+            <div class="param-safe-range">Safe: &lt; 10</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-nitrates" min="0" max="50" step="0.1" value="3.0" oninput="syncValue('nitrates')" />
+          <div class="slider-labels"><span>0</span><span>25</span><span>50</span></div>
+        </div>
+
+        <!-- Chlorides -->
+        <div class="param-card" data-param="chlorides">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:320">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Chlorides</span>
+              <span class="param-unit">mg/L</span>
+            </div>
+            <div class="param-status-dot" id="dot-chlorides"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-chlorides" value="80" step="1" min="0" max="500" oninput="syncSlider('chlorides')"/>
+            <div class="param-safe-range">Safe: &lt; 250</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-chlorides" min="0" max="500" step="1" value="80" oninput="syncValue('chlorides')" />
+          <div class="slider-labels"><span>0</span><span>250</span><span>500</span></div>
+        </div>
+
+        <!-- Sulfates -->
+        <div class="param-card" data-param="sulfates">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:50">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Sulfates</span>
+              <span class="param-unit">mg/L</span>
+            </div>
+            <div class="param-status-dot" id="dot-sulfates"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-sulfates" value="60" step="1" min="0" max="500" oninput="syncSlider('sulfates')"/>
+            <div class="param-safe-range">Safe: &lt; 250</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-sulfates" min="0" max="500" step="1" value="60" oninput="syncValue('sulfates')" />
+          <div class="slider-labels"><span>0</span><span>250</span><span>500</span></div>
+        </div>
+
+        <!-- Iron -->
+        <div class="param-card" data-param="iron">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:15">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Iron</span>
+              <span class="param-unit">mg/L</span>
+            </div>
+            <div class="param-status-dot" id="dot-iron"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-iron" value="0.1" step="0.01" min="0" max="2" oninput="syncSlider('iron')"/>
+            <div class="param-safe-range">Safe: &lt; 0.3</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-iron" min="0" max="2" step="0.01" value="0.1" oninput="syncValue('iron')" />
+          <div class="slider-labels"><span>0</span><span>1</span><span>2</span></div>
+        </div>
+
+        <!-- Temperature -->
+        <div class="param-card" data-param="temperature">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:355">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Temperature</span>
+              <span class="param-unit">°C</span>
+            </div>
+            <div class="param-status-dot" id="dot-temperature"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-temperature" value="25" step="0.5" min="0" max="50" oninput="syncSlider('temperature')"/>
+            <div class="param-safe-range">Safe: 20 – 30</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-temperature" min="0" max="50" step="0.5" value="25" oninput="syncValue('temperature')" />
+          <div class="slider-labels"><span>0°</span><span>25°</span><span>50°</span></div>
+        </div>
+
+        <!-- Coliform -->
+        <div class="param-card" data-param="coliform">
+          <div class="param-header">
+            <div class="param-icon-wrap" style="--hue:0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="param-meta">
+              <span class="param-name">Coliform</span>
+              <span class="param-unit">MPN/100ml</span>
+            </div>
+            <div class="param-status-dot" id="dot-coliform"></div>
+          </div>
+          <div class="param-value-row">
+            <input type="number" class="param-value-input" id="val-coliform" value="0" step="1" min="0" max="100" oninput="syncSlider('coliform')"/>
+            <div class="param-safe-range">Safe: 0</div>
+          </div>
+          <input type="range" class="param-slider" id="sl-coliform" min="0" max="100" step="1" value="0" oninput="syncValue('coliform')" />
+          <div class="slider-labels"><span>0</span><span>50</span><span>100</span></div>
+        </div>
+
+      </div>
+
+      <!-- PREDICT BUTTON -->
+      <div class="predict-btn-wrap">
+        <button class="predict-btn" id="predictBtn" onclick="runPrediction()">
+          <div class="predict-btn-inner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 0v10m0 0l-4-4m4 4l4-4"/></svg>
+            <span>Run AI Prediction</span>
+          </div>
+          <div class="btn-shimmer"></div>
+        </button>
+        <button class="reset-btn" onclick="resetValues()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9M3 3v4h4"/></svg>
+          Reset
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS SECTION -->
+  <section class="results-section" id="results">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">AI Output</div>
+        <h2 class="section-title">Prediction Results</h2>
+        <p class="section-desc">Real-time Water Quality Index computed by the AI engine</p>
+      </div>
+
+      <div class="results-grid">
+
+        <!-- WQI GAUGE CARD -->
+        <div class="gauge-card glass-card">
+          <div class="gauge-title">Water Quality Index</div>
+          <div class="gauge-wrap">
+            <div class="gauge-outer">
+              <svg class="gauge-svg" viewBox="0 0 220 130" id="gaugeSvg">
+                <!-- Background arc -->
+                <path d="M20 115 A90 90 0 0 1 200 115" stroke="#1a2a40" stroke-width="18" fill="none" stroke-linecap="round"/>
+                <!-- Colored arc -->
+                <path class="gauge-arc" id="gaugeArc" d="M20 115 A90 90 0 0 1 200 115" stroke="url(#gaugeGrad)" stroke-width="18" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"/>
+                <!-- Gradient definition -->
+                <defs>
+                  <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#00d4aa" id="gStop1"/>
+                    <stop offset="50%" stop-color="#ffd700" id="gStop2"/>
+                    <stop offset="100%" stop-color="#ff4444" id="gStop3"/>
+                  </linearGradient>
+                </defs>
+                <!-- Needle -->
+                <line class="gauge-needle" id="gaugeNeedle" x1="110" y1="115" x2="110" y2="35" stroke="white" stroke-width="2.5" stroke-linecap="round" transform="rotate(-90, 110, 115)"/>
+                <circle cx="110" cy="115" r="6" fill="white" opacity="0.9"/>
+              </svg>
+            </div>
+            <div class="gauge-score-wrap">
+              <div class="gauge-score" id="gaugeScore">—</div>
+              <div class="gauge-max">/ 100+</div>
+            </div>
+          </div>
+          <div class="wqi-badge-lg" id="wqiBadge">Run Analysis</div>
+          <div class="wqi-scale">
+            <div class="scale-item"><span class="scale-dot excellent"></span>Excellent</div>
+            <div class="scale-item"><span class="scale-dot good"></span>Good</div>
+            <div class="scale-item"><span class="scale-dot poor"></span>Poor</div>
+            <div class="scale-item"><span class="scale-dot vpoor"></span>Very Poor</div>
+            <div class="scale-item"><span class="scale-dot unfit"></span>Unfit</div>
+          </div>
+        </div>
+
+        <!-- PARAMETER STATUS GRID -->
+        <div class="param-status-card glass-card">
+          <div class="param-status-title">Parameter Status</div>
+          <div class="param-status-grid" id="paramStatusGrid">
+            <div class="param-stat-item" id="ps-ph"><span class="ps-name">pH</span><span class="ps-val" id="psv-ph">—</span><div class="ps-bar"><div class="ps-fill" id="psf-ph"></div></div></div>
+            <div class="param-stat-item" id="ps-turbidity"><span class="ps-name">Turbidity</span><span class="ps-val" id="psv-turbidity">—</span><div class="ps-bar"><div class="ps-fill" id="psf-turbidity"></div></div></div>
+            <div class="param-stat-item" id="ps-tds"><span class="ps-name">TDS</span><span class="ps-val" id="psv-tds">—</span><div class="ps-bar"><div class="ps-fill" id="psf-tds"></div></div></div>
+            <div class="param-stat-item" id="ps-hardness"><span class="ps-name">Hardness</span><span class="ps-val" id="psv-hardness">—</span><div class="ps-bar"><div class="ps-fill" id="psf-hardness"></div></div></div>
+            <div class="param-stat-item" id="ps-do"><span class="ps-name">DO</span><span class="ps-val" id="psv-do">—</span><div class="ps-bar"><div class="ps-fill" id="psf-do"></div></div></div>
+            <div class="param-stat-item" id="ps-conductivity"><span class="ps-name">Conductivity</span><span class="ps-val" id="psv-conductivity">—</span><div class="ps-bar"><div class="ps-fill" id="psf-conductivity"></div></div></div>
+            <div class="param-stat-item" id="ps-nitrates"><span class="ps-name">Nitrates</span><span class="ps-val" id="psv-nitrates">—</span><div class="ps-bar"><div class="ps-fill" id="psf-nitrates"></div></div></div>
+            <div class="param-stat-item" id="ps-chlorides"><span class="ps-name">Chlorides</span><span class="ps-val" id="psv-chlorides">—</span><div class="ps-bar"><div class="ps-fill" id="psf-chlorides"></div></div></div>
+            <div class="param-stat-item" id="ps-sulfates"><span class="ps-name">Sulfates</span><span class="ps-val" id="psv-sulfates">—</span><div class="ps-bar"><div class="ps-fill" id="psf-sulfates"></div></div></div>
+            <div class="param-stat-item" id="ps-iron"><span class="ps-name">Iron</span><span class="ps-val" id="psv-iron">—</span><div class="ps-bar"><div class="ps-fill" id="psf-iron"></div></div></div>
+            <div class="param-stat-item" id="ps-temperature"><span class="ps-name">Temperature</span><span class="ps-val" id="psv-temperature">—</span><div class="ps-bar"><div class="ps-fill" id="psf-temperature"></div></div></div>
+            <div class="param-stat-item" id="ps-coliform"><span class="ps-name">Coliform</span><span class="ps-val" id="psv-coliform">—</span><div class="ps-bar"><div class="ps-fill" id="psf-coliform"></div></div></div>
+          </div>
+        </div>
+
+        <!-- RADAR CHART -->
+        <div class="chart-card glass-card">
+          <div class="chart-card-title">Parameter Compliance Radar</div>
+          <div class="chart-wrap">
+            <canvas id="radarChart"></canvas>
+          </div>
+        </div>
+
+        <!-- DONUT CHART -->
+        <div class="chart-card glass-card">
+          <div class="chart-card-title">Contamination Breakdown</div>
+          <div class="chart-wrap">
+            <canvas id="donutChart"></canvas>
+          </div>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- TRENDS SECTION -->
+  <section class="trends-section" id="trends">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Historical Analysis</div>
+        <h2 class="section-title">Quality Trends</h2>
+        <p class="section-desc">Simulated historical trend based on current parameter profile</p>
+      </div>
+      <div class="trend-card glass-card">
+        <div class="trend-controls">
+          <div class="trend-tabs">
+            <button class="trend-tab active" id="tab7d" onclick="setTrendPeriod(7, this)">7 Days</button>
+            <button class="trend-tab" id="tab30d" onclick="setTrendPeriod(30, this)">30 Days</button>
+            <button class="trend-tab" id="tab90d" onclick="setTrendPeriod(90, this)">90 Days</button>
+          </div>
+          <div class="trend-stats-row" id="trendStatsRow">
+            <div class="trend-stat"><span class="ts-label">Avg WQI</span><span class="ts-val" id="trendAvg">—</span></div>
+            <div class="trend-stat"><span class="ts-label">Min WQI</span><span class="ts-val" id="trendMin">—</span></div>
+            <div class="trend-stat"><span class="ts-label">Max WQI</span><span class="ts-val" id="trendMax">—</span></div>
+          </div>
+        </div>
+        <div class="trend-chart-wrap">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECOMMENDATIONS SECTION -->
+  <section class="recs-section" id="recommendations">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">AI Insights</div>
+        <h2 class="section-title">Recommendations</h2>
+        <p class="section-desc">Smart treatment advice based on your water profile</p>
+      </div>
+      <div class="recs-grid" id="recsGrid">
+        <div class="rec-placeholder glass-card">
+          <div class="rec-placeholder-icon">🤖</div>
+          <p>Run a prediction to get AI-powered treatment recommendations</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="nav-logo" style="width:28px;height:28px">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M16 2C16 2 6 12 6 19a10 10 0 0020 0C26 12 16 2 16 2Z" fill="url(#fg)"/>
+              <defs><linearGradient id="fg" x1="6" y1="2" x2="26" y2="28" gradientUnits="userSpaceOnUse"><stop stop-color="#00d4ff"/><stop offset="1" stop-color="#0066ff"/></linearGradient></defs>
+            </svg>
+          </div>
+          <span>AquaAI</span>
+        </div>
+        <p class="footer-text">Based on WHO/BIS Drinking Water Standards · For educational purposes</p>
+        <p class="footer-copy">© 2026 AquaAI · AI-Powered Water Quality Intelligence</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
