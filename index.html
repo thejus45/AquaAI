@@ -10,6 +10,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://hgxyysanxbnjbehkrvhy.supabase.co'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhneHl5c2FueGJuamJlaGtydmh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NTg5MzQsImV4cCI6MjA5ODIzNDkzNH0.HsKrkvn4duQphw52FYptCf1oBKw-A62f6y2wHtOvNCg'
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+  console.log('Supabase connected:', supabase)
+</script>
 </head>
 <body>
 
