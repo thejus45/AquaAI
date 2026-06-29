@@ -9,6 +9,29 @@
 // PARAMETER CONFIGURATION
 // WHO/BIS Standard reference values & weights
 // =============================================
+
+
+
+// app.js
+import { supabase } from './supabaseClient.js'
+
+async function signUp(email, password) {
+  const { data, error } = await supabase.auth.signUp({ email, password })
+  if (error) {
+    console.error(error.message)
+  } else {
+    console.log('Signed up:', data)
+  }
+}
+
+async function signIn(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) {
+    console.error(error.message)
+  } else {
+    console.log('Logged in:', data)
+  }
+}
 const PARAMS_CONFIG = {
     ph: { ideal: 7.0, min: 6.5, max: 8.5, weight: 0.122, label: 'pH', unit: '' },
     turbidity: { ideal: 0, min: 0, max: 1, weight: 0.104, label: 'Turbidity', unit: 'NTU' },
